@@ -41,5 +41,5 @@ Demo [https://flowergarden1.netlify.app/]
 --
 Contact: 
 
-Email [isurujayanada2002@gmail.com]
-Linkedin [https://www.linkedin.com/in/isuru-jayanada-044738265/]
+- Email [isurujayanada2002@gmail.com]
+- Linkedin [https://www.linkedin.com/in/isuru-jayanada-044738265/]
