@@ -34,3 +34,10 @@ A cozy, 8-bit aesthetic virtual garden that lives in your browser. Plant seeds, 
 
 ---
 *Happy Planting!* 🌱
+
+
+--
+Contact: 
+
+Email [isurujayanada2002@gmail.com]
+Linkedin [https://www.linkedin.com/in/isuru-jayanada-044738265/]
