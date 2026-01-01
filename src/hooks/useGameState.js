@@ -5,6 +5,7 @@ const SAVE_KEY = 'pixel_garden_data';
 const INITIAL_GRID = Array(GRID_SIZE).fill(null);
 
 export const useGameState = () => {
+    const [tick, setTick] = useState(0); // Add tick to force re-renders
     const [grid, setGrid] = useState(() => {
         const saved = localStorage.getItem(SAVE_KEY);
         const now = Date.now();
@@ -18,11 +19,6 @@ export const useGameState = () => {
                 return savedGrid.map(plant => {
                     if (!plant) return null;
 
-                    // Calculate if it grew while away
-                    // Logic: Water remaining at save time was (LastWatered + Duration) - LastSave
-                    // Growth accrued is min(TimeAway, WaterRemaining)
-
-                    // However, if lastWatered was 0 (never), it should be big negative, so max(0, ...) works.
                     const timeSinceWateredAtSave = lastSave - plant.lastWatered;
                     const waterRemainingAtSave = Math.max(0, WATER_DURATION - timeSinceWateredAtSave);
                     const growthDuringAbsence = Math.min(elapsed, waterRemainingAtSave);
@@ -40,9 +36,10 @@ export const useGameState = () => {
         return INITIAL_GRID;
     });
 
-    // Game Loop for Active Growth
+    // Game Loop
     useEffect(() => {
         const interval = setInterval(() => {
+            setTick(t => t + 1); // Force update every tick
             setGrid(currentGrid => {
                 const now = Date.now();
                 let changed = false;
@@ -51,13 +48,16 @@ export const useGameState = () => {
 
                     const isWet = (now - plant.lastWatered) < WATER_DURATION;
                     const typeDef = PLANT_TYPES[plant.type];
-                    // Safety check if typeDef is missing (e.g. valid save but code changed)
                     if (!typeDef) return plant;
 
                     const maxGrowth = (typeDef.stages.length - 1) * typeDef.growthTime;
                     const isFullyGrown = plant.accumulatedGrowth >= maxGrowth;
 
                     if (isWet && !isFullyGrown) {
+                        // We always return a new object if we want to ensure state updates 
+                        // but actually 'changed' flag is enough for React optimization.
+                        // However, since we update 'tick', the component WILL re-render anyway.
+                        // We just need to update the grid data correctly.
                         changed = true;
                         return {
                             ...plant,
@@ -79,7 +79,14 @@ export const useGameState = () => {
             lastSave: Date.now()
         };
         localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    }, [grid]);
+    }, [grid, tick]); // Save on tick too? Maybe unnecessary IO. Save on grid change. 
+    // Actually, saving on every tick (1s) is fine for local helper, but maybe too much.
+    // 'grid' updates if growth happens. If no growth, grid doesn't update.
+    // But we want to save 'lastSave' so that if user closes tab, we know when they left.
+    // If we only save when 'grid' changes, and they leave when grid is stable (dry), we might lose time reference?
+    // No, if they leave, 'grid' state is the same. 'lastSave' will be the timestamp of that last save.
+    // Ideally save on unload, but that's flaky.
+    // Saving every 5s or so is better. For now, on 'grid' change is fine.
 
     const interact = useCallback((index, tool) => {
         setGrid(prev => {
@@ -94,13 +101,12 @@ export const useGameState = () => {
                     newGrid[index] = { ...cell, lastWatered: now };
                 }
             } else if (tool === TOOLS.SEED_FLOWER || tool === TOOLS.SEED_TREE) {
-                // Can only plant in empty spot
                 if (!cell) {
                     const typeKey = tool === TOOLS.SEED_FLOWER ? 'FLOWER' : 'TREE';
                     newGrid[index] = {
                         type: typeKey,
                         plantedAt: now,
-                        lastWatered: 0, // Starts dry, needs water
+                        lastWatered: 0,
                         accumulatedGrowth: 0
                     };
                 }
@@ -109,5 +115,5 @@ export const useGameState = () => {
         });
     }, []);
 
-    return { grid, interact };
+    return { grid, interact, tick };
 };

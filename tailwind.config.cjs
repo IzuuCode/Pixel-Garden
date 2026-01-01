@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
@@ -12,10 +12,11 @@ export default {
             colors: {
                 game: {
                     bg: '#FDF6E3',
-                    border: '#657B83',
-                    pot: '#D8A48F',
-                    water: '#93C5FD',
                 }
+            },
+            animation: {
+                'bounce-slow': 'bounce 3s infinite',
+                'spin-slow': 'spin 4s linear infinite',
             }
         },
     },
