@@ -35,6 +35,8 @@ A cozy, 8-bit aesthetic virtual garden that lives in your browser. Plant seeds, 
 ---
 *Happy Planting!* 🌱
 
+Demo [https://flowergarden1.netlify.app/]
+
 
 --
 Contact: 
